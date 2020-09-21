@@ -1,0 +1,49 @@
+{
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.2",
+    "body": [
+        {
+            "type": "ColumnSet",
+            "columns": [
+                {
+                    "type": "Column",
+                    "width": 2,
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "Sua reunião está disponível!",
+                            "wrap": true,
+                            "size": "medium",
+                            "weight": "bolder"
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "Clique no link abaixo para ingressar, e se precisar de alguma ajuda, fique à vontade para continuar enviando as mensagens neste chat.\n\nObrigado! 😊",
+                            "spacing": "None",
+                            "wrap": true
+                        }
+                    ]
+                },
+                {
+                    "type": "Column",
+                    "width": 1,
+                    "items": [
+                        {
+                            "type": "Image",
+                            "url": "https://canvas.rutgers.edu/wp-content/uploads/2020/04/microsoft_teams_logo.png",
+                            "size": "auto"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.OpenUrl",
+            "title": "Ingressar",
+            "url": "${url}"
+        }
+    ]
+}

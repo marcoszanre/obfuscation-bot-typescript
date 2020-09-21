@@ -18,18 +18,16 @@ const initTableSvc = () => {
     });
 };
 
-const insertUserReference = (context: TurnContext) => {
+const insertConvReference = (channelConversationReference: string, webConversationReference: string, webConversationID: string) => {
 
-        const conversationReference = JSON.stringify(TurnContext.getConversationReference(context.activity));
-
-        const userReference = {
-            PartitionKey: {_: "userReference"},
-            RowKey: {_: context.activity.from.aadObjectId},
-            user: {_: context.activity.from.name},
-            reference: {_: conversationReference},
+        const convReference = {
+            PartitionKey: {_: "convReference"},
+            RowKey: {_: webConversationID},
+            channelRef: {_: channelConversationReference},
+            webRef: {_: webConversationReference},
         };
 
-        tableSvc.insertEntity("proactiveTable", userReference, (error, result, response) => {
+        tableSvc.insertEntity("proactiveTable", convReference, (error, result, response) => {
             if (!error) {
               // Entity inserted
               log("success!");
@@ -40,122 +38,53 @@ const insertUserReference = (context: TurnContext) => {
 };
 
 
-const getUserReference = async (rowkey: string) => {
+const getConvReference = async (channelRef: string) => {
 
     return new Promise((resolve, reject) => {
 
-        tableSvc.retrieveEntity("proactiveTable", "userReference", rowkey, (error, result, response) => {
+        const query = new azure.TableQuery()
+            .where("channelRef eq ?", channelRef);
+
+        tableSvc.queryEntities("proactiveTable", query, null, (error, result, response) => {
             if (!error) {
-                // result contains the entity
-                const userReference: IUserReference = {
-                    user: result.user._,
-                    reference: result.reference._,
-                };
-                resolve(userReference);
+              // query was successful
+              const convReturnReference: IConvReference = {
+                convRef: result.entries[0].webRef._,
+                channelRef: result.entries[0].channelRef._
+              };
+              resolve(convReturnReference);
             }
         });
     });
 };
 
-interface IUserReference {
-    user: string;
-    reference: string;
+interface IConvReference {
+    convRef: string;
+    channelRef: string;
 }
 
-const insertConversationID = (user: string, conversationID: string) => {
-
-    const conversationIDReference = {
-        PartitionKey: {_: "conversationIDs"},
-        RowKey: {_: user},
-        conversationID: {_: conversationID}
-    };
-
-    tableSvc.insertEntity("proactiveTable", conversationIDReference, (error, result, response) => {
-        if (!error) {
-          // Entity inserted
-          log("success!");
-        } else {
-            log(error);
-        }
-    });
-};
-
-const getconversationID = async (rowkey: string) => {
+const getConvChannelReference = async (webconvid: string) => {
 
     return new Promise((resolve, reject) => {
 
-        tableSvc.retrieveEntity("proactiveTable", "conversationIDs", rowkey, (error, result, response) => {
+        tableSvc.retrieveEntity("proactiveTable", "convReference", webconvid, (error, result, response) => {
             if (!error) {
-                // result contains the entity
-                const convID: IConversationID = {
-                    conversationID: result.conversationID._
-                };
-                resolve(convID);
-            } else {
-                // conversation ID doesn't exist yet
-                const convID: IConversationID = {
-                    conversationID: "nouser"
-                };
-                resolve(convID);
+              // query was successful
+              const convReturnReference: IConvReference = {
+                convRef: result.webRef._,
+                channelRef: result.channelRef._
+              };
+              resolve(convReturnReference);
             }
         });
     });
 };
 
-const insertUserID = (aadObjectId: string, name: string, id: string) => {
-
-    const userIDReference = {
-        PartitionKey: {_: "userIDs"},
-        RowKey: {_: aadObjectId},
-        name: {_: name},
-        id: {_: id}
-    };
-
-    tableSvc.insertEntity("proactiveTable", userIDReference, (error, result, response) => {
-        if (!error) {
-          // Entity inserted
-          log("success!");
-        } else {
-            log(error);
-        }
-    });
-};
-
-const getuserID = async (rowkey: string) => {
-
-    return new Promise((resolve, reject) => {
-
-        tableSvc.retrieveEntity("proactiveTable", "userIDs", rowkey, (error, result, response) => {
-            if (!error) {
-                // result contains the entity
-                const userID: IUserID = {
-                    name: result.name._,
-                    id: result.id._
-                };
-                resolve(userID);
-            }
-        });
-    });
-};
-
-interface IConversationID {
-    conversationID: string;
-}
-
-interface IUserID {
-    name: string;
-    id: string;
-}
 
 export {
     initTableSvc,
-    insertUserReference,
-    getUserReference,
-    insertConversationID,
-    getconversationID,
-    insertUserID,
-    getuserID,
-    IUserID,
-    IUserReference,
-    IConversationID
+    insertConvReference,
+    getConvReference,
+    IConvReference,
+    getConvChannelReference
 };

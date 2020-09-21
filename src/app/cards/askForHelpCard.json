@@ -1,0 +1,57 @@
+{
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.2",
+    "body": [
+        {
+            "speak": "Tom's Pie is a Pizza restaurant which is rated 9.3 by customers.",
+            "type": "ColumnSet",
+            "columns": [
+                {
+                    "type": "Column",
+                    "width": 2,
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "Pedido de  Ajuda"
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "${txtnome}",
+                            "weight": "Bolder",
+                            "size": "ExtraLarge",
+                            "spacing": "None"
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "${txtduvida}",
+                            "size": "Small",
+                            "wrap": true,
+                            "maxLines": 3
+                        }
+                    ]
+                },
+                {
+                    "type": "Column",
+                    "width": 1,
+                    "items": [
+                        {
+                            "type": "Image",
+                            "url": "https://image.flaticon.com/icons/png/512/682/682055.png",
+                            "size": "auto"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.Submit",
+            "title": "Chamada",
+            "data": {
+                "createmeeting": true
+            }
+        }
+    ]
+}

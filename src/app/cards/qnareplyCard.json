@@ -1,0 +1,77 @@
+{
+    "type": "AdaptiveCard",
+    "body": [
+        {
+            "type": "TextBlock",
+            "size": "medium",
+            "weight": "bolder",
+            "text": "Resposta"
+        },
+        {
+            "type": "TextBlock",
+            "text": "${resposta}",
+            "wrap": true
+        },
+        {
+            "type": "TextBlock",
+            "text": "Se precisar de algum esclarecimento adicional, fique à vontade para fazer outra pergunta ou  clicar no botão abaixo para escalar para um especialista, ok? 😉",
+            "spacing": "Medium",
+            "separator": true,
+            "wrap": true
+        }
+    ],
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.2",
+    "actions": [
+        {
+            "type": "Action.ShowCard",
+            "title": "Escalar",
+            "card": {
+                "type": "AdaptiveCard",
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "version": "1.2",
+                "body": [
+                    {
+                        "type": "TextBlock",
+                        "text": "Compartilhe sua dúvida abaixo: ✔",
+                        "fontType": "Default",
+                        "size": "medium",
+                        "weight": "bolder",
+                        "horizontalAlignment": "center"
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "Nome:"
+                    },
+                    {
+                        "type": "Input.Text",
+                        "placeholder": "Nome",
+                        "id": "txtNome"
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "Dúvida:"
+                    },
+                    {
+                        "type": "Input.Text",
+                        "placeholder": "Dúvida",
+                        "isMultiline": true,
+                        "id": "txtDuvida"
+                    },
+                    {
+                        "type": "ActionSet",
+                        "actions": [
+                            {
+                                "type": "Action.Submit",
+                                "title": "Enviar",
+                                "style": "positive"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "id": "btnEscalar",
+            "style": "positive"
+        }
+    ]
+}

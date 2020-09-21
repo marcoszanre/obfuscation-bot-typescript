@@ -1,7 +1,18 @@
 import { BotDeclaration } from "express-msteams-host";
-import { TurnContext, MemoryStorage, TeamsActivityHandler, MessageFactory, ConversationParameters, Activity, BotFrameworkAdapter, TeamsInfo } from "botbuilder";
-import { initTableSvc, insertUserReference, insertUserID } from "../tableService";
-import { sendChannelMessage, sendUserMessage, initConnectorClient } from "../connectorClient";
+import { TurnContext, MemoryStorage, TeamsActivityHandler, MessageFactory, ConversationParameters, Activity, BotFrameworkAdapter, TeamsInfo, CardFactory, ConversationReference, ConversationState, StatePropertyAccessor, ActivityTypes } from "botbuilder";
+import { initTableSvc, insertConvReference, getConvReference, IConvReference } from "../tableService";
+import { DialogSet, DialogState, DialogTurnStatus } from "botbuilder-dialogs";
+import { sendChannelMessage, sendUserMessage, initConnectorClient, notifyChannel, routeToChannel, routeToUser, notifyMeeting } from "../connectorClient";
+import { generateAnswer } from "../qnaService";
+import * as ACData from "adaptivecards-templating";
+import webToExpertDialog from "../dialogs/webToExpertDialog";
+import { initGraphSvc, createMeeting } from "../graphService";
+
+// Import required cards
+const qnaReplyCard = require(".././cards/qnareplyCard.json");
+const cancelarExpertCard = require(".././cards/cancelExpertCard.json");
+const notifyMeetingsCard = require(".././cards/notifyMeetingCard.json");
+
 
 /**
  * Implementation for proactive messages Bot
@@ -13,13 +24,21 @@ import { sendChannelMessage, sendUserMessage, initConnectorClient } from "../con
     process.env.MICROSOFT_APP_PASSWORD)
 
 export class ProactiveMessagesBot extends TeamsActivityHandler {
+    private readonly conversationState: ConversationState;
+    private readonly dialogs: DialogSet;
+    private dialogState: StatePropertyAccessor<DialogState>;  
 
     /**
      * The constructor
      * @param conversationState
      */
-    public constructor() {
+    public constructor(conversationState: ConversationState) {
         super();
+
+        this.conversationState = conversationState;
+        this.dialogState = conversationState.createProperty("dialogState");
+        this.dialogs = new DialogSet(this.dialogState);
+        this.dialogs.add(new webToExpertDialog("chat"));
 
         // Init table service
         initTableSvc();
@@ -27,8 +46,144 @@ export class ProactiveMessagesBot extends TeamsActivityHandler {
         // Init Connector Client
         initConnectorClient();
 
+        // Init Graph Client
+        initGraphSvc();
+
         // Set up the Activity processing
         this.onMessage(async (context: TurnContext): Promise<void> => {
+
+            if(context.activity.conversation.conversationType) {
+
+                // Message received in Teams
+
+                // Confirm if message is a card reply or not
+                if (context.activity.value) {
+
+                    // Notify conversation to join meeting
+                    await getConvReference(context.activity.conversation.id).then(async (ref: IConvReference) => {
+
+                        const randID = Math.floor(Math.random() * 10000 + 1)
+                   
+                        // Create Graph Meeting
+                        const myMeeting = await createMeeting(`Atendimento Contoso ${randID}`);
+                        // console.log(myMeeting);
+
+                        // Create Notify Card
+                        let template = new ACData.Template(notifyMeetingsCard);
+                        let notifyCardExpanded = template.expand({
+                        $root: {
+                            url: myMeeting
+                        }
+                        });
+
+                        notifyMeeting(ref, notifyCardExpanded);
+                            
+                    });
+
+                 } else {
+
+                    const text = await TurnContext.removeRecipientMention(context.activity);
+                
+                    await getConvReference(context.activity.conversation.id).then(async (ref: IConvReference) => {
+
+                    // console.log(ref.convRef);
+
+                    routeToUser(ref.convRef, text);
+
+                    // console.log(conversationReferenceWeb);
+
+                    // await context.adapter.continueConversation(conversationReferenceWeb, async turnContext => {
+                    //     await turnContext.sendActivity("asdasdad");
+                    // });
+                    
+                     });
+
+                }
+
+            } else {
+                const dc = await this.dialogs.createContext(context);
+
+                // Confirm if message is a card reply or not
+                if (context.activity.value) {
+
+                    // Send Typing Activity
+                    await context.sendActivity({type:  ActivityTypes.Typing});
+
+                    await context.sendActivity(`Obrigado ${context.activity.value.txtNome}! Vou escalar agora! Um momento que já te aviso quando um especialista se conectar 😉`);
+
+                    // Send Typing Activity
+                    await context.sendActivity({type:  ActivityTypes.Typing});
+
+                    // Prepare storage reference
+                    const channelConversationReference = await notifyChannel(context.activity.value.txtNome, context.activity.value.txtDuvida);
+                    const webConversationReference = JSON.stringify(TurnContext.getConversationReference(context.activity));
+                    const webConversationID = context.activity.conversation.id;
+
+                    insertConvReference(
+                        channelConversationReference,
+                        webConversationReference,
+                        webConversationID
+                    )
+
+                    const cancelarCard = CardFactory.adaptiveCard(cancelarExpertCard);
+                    await context.sendActivity( { attachments: [cancelarCard] });
+
+                    // routeToChannel("this is a reply", channelConversationReference)
+
+                    // await context.sendActivity("notifyChannel Done 😎");
+
+                    // const dc = await this.dialogs.createContext(context);
+                    await dc.beginDialog("chat");
+
+                } else {
+
+                    // const dc = await this.dialogs.createContext(context);
+
+                    // Cancel Dialog execution if user sends cancelar
+                    // if (context.activity.text.startsWith("cancelar")) {
+                    //     await dc.cancelAllDialogs();
+                    // }
+
+                    const results = await dc.continueDialog();
+
+                    // If there's no dialog running, run this
+                    if (results.status === DialogTurnStatus.empty) {
+
+                        // Send Typing Activity
+                        await context.sendActivity({type:  ActivityTypes.Typing});
+
+                        // Retrieve answer from QnA
+                        const answer = await generateAnswer(context);
+
+                        // Build QnA Reply Card
+                        let template = new ACData.Template(qnaReplyCard);
+                        let qnaReplyCardExpanded = template.expand({
+                        $root: {
+                            resposta: answer
+                        }
+                        });
+                        
+                        // Reply Back to User
+                        const QnAReplyAdaptiveCard = CardFactory.adaptiveCard(qnaReplyCardExpanded);
+                        await context.sendActivity({ attachments: [QnAReplyAdaptiveCard] });
+
+                    }
+
+                    // await dc.beginDialog("chat"); 
+
+                    // const convReference = JSON.stringify(TurnContext.getConversationReference(context.activity));
+                    // console.log(convReference);
+                    
+                    // routeToUser(convReference, "blablabla");
+
+                }
+
+
+            }
+
+            /*
+            await sendChannelMessage(`Proactive message: ${context.activity.text}`);
+            await context.sendActivity("sendChannel Done 😎");
 
             if (context.activity.conversation.conversationType === "personal") {
                 switch (context.activity.text) {
@@ -65,15 +220,18 @@ export class ProactiveMessagesBot extends TeamsActivityHandler {
                     });
                 }
             }
+            */
 
-            await context.sendActivity("thanks for your message 😀");
+            // await context.sendActivity("thanks for your message 😀");
+            // Save state changes
+            return this.conversationState.saveChanges(context);
         });
 
         this.onConversationUpdate(async (context: TurnContext): Promise<void> => {
             if (context.activity.membersAdded && context.activity.membersAdded.length !== 0) {
                 for (const idx in context.activity.membersAdded) {
                     if (context.activity.membersAdded[idx].id === context.activity.recipient.id) {
-                        await context.sendActivity("thanks for your message 😀");
+                        await context.sendActivity("Bem-vindo! Fique à vontade para tirar suas dúvidas conosco! 😀");
                     }
                 }
             }
