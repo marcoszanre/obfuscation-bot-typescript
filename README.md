@@ -7,14 +7,20 @@ The obfuscation bot is an example of how a Bot Framework bot is able to interact
 
 ## How does it work?
 
-When the bot receives an adaptive card user submission, it will create a new thread in the Teams expert channel and store both conversation references in an Azure Table Storage, to refer to when posting proactive messages between the user and the channel. In order to provide a proper user experience when chatting with experts, the bot leverages dialogs and prompts (blank prompts actually), so that, whenever a user sends a message in the public bot, or the Teams channel, the bot refers to the conversation reference and sends a proactive message in the other channel with the content it received. In addition, if an expert decides that the conversation should rather happen over audio/video or even screen sharing, they can, by clicking on the adaptive card, provision a new Teams meeting, that will be sent in both threads, that participants can reference to connect for this particular case. If a user wants to leave the dialog and return to the QnA experience, they just need to send "cancelar" and the bot will terminate the dialog and let both threads know that the conversation has ended. The Bot registration in Teams also has some "answer suggestions" to facilitate the interaction between the expert and the user. 
+When the bot receives an adaptive card user submission, it will create a new thread in the Teams expert channel and store both conversation references in an Azure Table Storage, to refer to when posting proactive messages between the user and the channel.
+
+In order to provide a proper user experience when chatting with experts, the bot leverages dialogs and prompts (blank prompts actually), so that, whenever a user sends a message in the public bot, or the Teams channel, the bot refers to the conversation reference and sends a proactive message in the other channel with the content it received.
+
+In addition, if an expert decides that the conversation should rather happen over audio/video or even screen sharing, they can, by clicking on the adaptive card, provision a new Teams meeting, that will be sent in both threads, that participants can reference to connect for this particular case.
+
+If a user wants to leave the dialog and return to the QnA experience, they just need to send "cancelar" and the bot will terminate the dialog and let both threads know that the conversation has ended. The Bot registration in Teams also has some "answer suggestions" to facilitate the interaction between the expert and the user. 
 
 
 ## Components
 
 The Obfuscation Bot solution is comprised of the following components:
 
-* A `bot`, built with Bot Framework, hosted in a Teams channel and exposed in the public web chat channel
+* A `bot`, built with Bot Framework, installed in a Teams channel and exposed in the public web chat channel
 * A `Microsoft Teams team`, where experts and anyone who will interact with the bot join to be notified and connect over user conversations
 * An `Azure QnA Service`, that hosts the knowledge base and answer user questions
 * An `Azure Table Storage`, to store the conversation references for the public chat and the Teams thread.
