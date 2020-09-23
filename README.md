@@ -106,6 +106,18 @@ Following are ideas, that could be considered to extend the reach of this soluti
 * Expose to the Teams bot internal services (e.g. check user data against internal information from the chat itself - "@bot, what's userid status?").
 
 
+## Demo screenshots
+
+1. User interaction with web channel (right) and can escalate questions, which are sent to the experts channel in Teams
+![architecture overview](https://github.com/marcoszanre/obfuscation-bot-typescript/blob/master/demo-1.png/)
+
+2. Experts can mention the bot in Teams and user can send messages to the bot and both will be routed
+![architecture overview](https://github.com/marcoszanre/obfuscation-bot-typescript/blob/master/demo-2.png/)
+
+3. Teams meetings are created and coordinates are made available in both channels
+![architecture overview](https://github.com/marcoszanre/obfuscation-bot-typescript/blob/master/demo-3.png/)
+
+
 ## Architecture overview
 ![architecture overview](https://github.com/marcoszanre/obfuscation-bot-typescript/blob/master/architecture-overview.png/)
 
