@@ -108,13 +108,18 @@ Following are ideas, that could be considered to extend the reach of this soluti
 
 ## Demo screenshots
 
-1. User interaction with web channel (right) and can escalate questions, which are sent to the experts channel in Teams
+1. User interaction with web channel (right) and can escalate questions, which are sent to the experts channel in Teams:
+
 ![architecture overview](https://github.com/marcoszanre/obfuscation-bot-typescript/blob/master/demo-1.png/)
 
-2. Experts can mention the bot in Teams and user can send messages to the bot and both will be routed
+
+2. Experts can mention the bot in Teams and user can send messages to the bot and both will be routed:
+
 ![architecture overview](https://github.com/marcoszanre/obfuscation-bot-typescript/blob/master/demo-2.png/)
 
-3. Teams meetings are created and coordinates are made available in both channels
+
+3. Teams meetings are created and coordinates are made available in both channels:
+
 ![architecture overview](https://github.com/marcoszanre/obfuscation-bot-typescript/blob/master/demo-3.png/)
 
 
