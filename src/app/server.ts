@@ -5,9 +5,6 @@ import * as morgan from "morgan";
 import { MsTeamsApiRouter, MsTeamsPageRouter } from "express-msteams-host";
 import * as debug from "debug";
 import * as compression from "compression";
-// import {  } from "../app/tableService";
-
-
 
 // Initialize debug logging module
 const log = debug("msteams");
@@ -18,12 +15,8 @@ log(`Initializing Microsoft Teams Express hosted App...`);
 // tslint:disable-next-line:no-var-requires
 require("dotenv").config();
 
-
-
 // The import of components has to be done AFTER the dotenv config
 import * as allComponents from "./TeamsAppsComponents";
-// import { getconversationID, IConversationID, getuserID, IUserID, insertConversationID } from "./tableService";
-import { BotFrameworkAdapter, MessageFactory, ConversationParameters, Activity } from "botbuilder";
 
 // Create the Express webserver
 const express = Express();
@@ -74,129 +67,3 @@ express.set("port", port);
 http.createServer(express).listen(port, () => {
     log(`Server running on ${port}`);
 });
-
-// // Create adapter.
-// // See https://aka.ms/about-bot-adapter to learn more about adapters.
-// const adapter = new BotFrameworkAdapter({
-//     appId: process.env.MICROSOFT_APP_ID,
-//     appPassword: process.env.MICROSOFT_APP_PASSWORD
-// });
-
-// // tslint:disable-next-line:no-var-requires
-// const BotConnector = require("botframework-connector");
-
-// BotConnector.MicrosoftAppCredentials.trustServiceUrl(
-//   process.env.SERVICE_URL
-// );
-
-// // Send user proactive message
-// express.get("/api/proactive", async (req, res, next) => {
-
-//     const message = MessageFactory.text("This is a user message 😀") as Activity;
-//     const conversationParameters = {
-//         isGroup: false,
-//         channelData: {
-//             tenant: {
-//                 id: process.env.TENANT_ID
-//             }
-//         },
-//         bot: {
-//             id: process.env.BOT_ID,
-//             name: process.env.BOT_NAME
-//         },
-//         members: [
-//             {
-//                 id: "29:1r48gyAgyrbiAeDNnSVcd99hKNML6XcwBorYH4OOxZjzBCFYHtRKZMW3c2at7SLedQCCYvGTYWbvbw8VT5fBAjA",
-//                 name: "MOD Administrator"
-//             }
-//         ]
-//     };
-
-//     const parametersTalk = conversationParameters as ConversationParameters;
-//     const connectorClient = adapter.createConnectorClient(process.env.SERVICE_URL as string);
-//     const response = await connectorClient.conversations.createConversation(parametersTalk);
-//     await connectorClient.conversations.sendToConversation(response.id, message);
-
-//     res.send("Message sent");
-//     next();
-// });
-
-
-// // Send channel proactive message
-// express.post("/api/notification", async (req, res, next) => {
-
-//     const nametxt = req.body.name;
-//     const teamsChannelId = process.env.TEAMS_CHANNEL_ID;
-//     const message = MessageFactory.text(`This is the name of the request: ${nametxt}`);
-
-//     const conversationParameters = {
-//         isGroup: true,
-//         channelData: {
-//             channel: {
-//                 id: teamsChannelId
-//             }
-//         },
-//         activity: message
-//     };
-
-//     const conversationParametersReference = conversationParameters as ConversationParameters;
-//     const connectorClient = adapter.createConnectorClient(process.env.SERVICE_URL as string);
-//     await connectorClient.conversations.createConversation(conversationParametersReference);
-
-//     res.send("Message sent");
-//     next();
-// });
-
-// // Store and retrieve conversation id
-// express.post("/createUserConversation", (req, res, next) => {
-//     // log(req.body.userid);
-//     getconversationID(req.body.userid as string).then(async (convID: IConversationID) => {
-//         if (convID.conversationID !== "nouser") {
-//             // Conversation ID Found, send the message
-//             const message = MessageFactory.text("This is a user message 😀") as Activity;
-//             const connectorClient = adapter.createConnectorClient(process.env.SERVICE_URL as string);
-//             await connectorClient.conversations.sendToConversation(convID.conversationID, message);
-
-//             res.send("conversation continued");
-//             next();
-//         } else {
-//             log("user NOT found");
-//             // Get user id
-//             getuserID(req.body.userid as string).then(async (userID: IUserID) => {
-//                 const message = MessageFactory.text("This is a user message 😀") as Activity;
-
-//                 const conversationParameters = {
-//                     isGroup: false,
-//                     channelData: {
-//                         tenant: {
-//                             id: process.env.TENANT_ID
-//                         }
-//                     },
-//                     bot: {
-//                         id: process.env.BOT_ID,
-//                         name: process.env.BOT_NAME
-//                     },
-//                     members: [
-//                         {
-//                             id: userID.id,
-//                             name: userID.name
-//                         }
-//                     ]
-//                 };
-
-//                 const parametersTalk = conversationParameters as ConversationParameters;
-//                 const connectorClient = adapter.createConnectorClient(process.env.SERVICE_URL as string);
-//                 const response = await connectorClient.conversations.createConversation(parametersTalk);
-//                 await connectorClient.conversations.sendToConversation(response.id, message);
-
-//                 insertConversationID(req.body.userid, response.id);
-
-//                 res.send("Message sent");
-//                 next();
-//             });
-
-//         }
-
-//     });
-// });
-

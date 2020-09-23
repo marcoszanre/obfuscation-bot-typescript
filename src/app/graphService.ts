@@ -12,15 +12,23 @@ const qs = require("qs");
 // Initialize debug logging module
 const log = debug("msteams");
 
+// Create access token variable to store Graph permissions
 let accessToken: string;
 
+
+// Initialize Graph Service and retrieve a token to be used to provision meetings
 const initGraphSvc = async () => {
+
+    // Retrieve token response from directory token service and update the accessToken variable with it
     const tokenEndpointResponse = await callTokenEndpoint();
     accessToken = tokenEndpointResponse.data.access_token;
-    // log(accessToken);
+
+    // Notify success
     log("Graph Service initialized");
 };
 
+
+// Function to retrieve access token leveraging a service account and an application registration with appropriate createOnlineMeeting permissions
 const callTokenEndpoint = async () => {
     try {
       return await axios({
@@ -41,8 +49,11 @@ const callTokenEndpoint = async () => {
     } catch (error) {
       log(error);
     }
+
 };
 
+
+// Function to call the Microsoft Graph endpoint with existing token to provision a new Teams meeting
 const createOnlineMeeting = async (token, meetingname) => {
     try {
       return await axios({
@@ -63,11 +74,15 @@ const createOnlineMeeting = async (token, meetingname) => {
     }
 };
 
+
+// Create Teams meeting and retrieve the id to be used later
 const createMeeting = async (meetingname: string) => {
     const meetingData = await createOnlineMeeting(accessToken, meetingname);
     return meetingData.data.joinUrl;
 };
 
+
+// Export the appropriate functions to be used in the application
 export {
     createMeeting,
     initGraphSvc
