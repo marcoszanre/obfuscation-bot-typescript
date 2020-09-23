@@ -1,4 +1,4 @@
-**Important**: this sample code is provided as is.
+**IMPORTANT**: this sample code is provided as is.
 
 # Obfuscation Bot - a Microsoft Teams and Public Chat bot
 
@@ -69,7 +69,7 @@ In order to run this repository locally, follow the steps below:
 * Open the `Test in Web Chat` experience or copy the iframe reference of the Web Chat to add it to an existing web page and start interacting with it.
 
 
-## Expected Conversation Flow
+## Expected conversation flow
 
 The following conversation flow has been planned through the building process of this bot:
 
