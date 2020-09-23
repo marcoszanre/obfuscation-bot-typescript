@@ -88,6 +88,7 @@ The following scenarios, though important, have not been implemented yet in this
 * Table Service active chat boolean column
 * Teams bot checks if a chat is still active, to not try to send webchat user messages in case a thread has already been closed
 * Logic to confirm if the user is still active in webchat, or even left the page, to terminate the conversation automatically
+* Move bot dialog storage implementation from memory to a persistent storage (e.g. Azure Storage)
 
 
 ## Extension opportunities
