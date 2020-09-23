@@ -21,14 +21,14 @@ If a user wants to leave the dialog and return to the QnA experience, they just 
 The Obfuscation Bot solution is comprised of the following components:
 
 * A `bot`, built with Bot Framework, installed in a Teams channel and exposed in the public web chat channel
-* A `Microsoft Teams team`, where experts and anyone who will interact with the bot join to be notified and connect over user conversations
+* A `Microsoft Teams team`, where experts, and anyone who will interact with the bot, join to be notified and connect over user conversations
 * An `Azure QnA Service`, that hosts the knowledge base and answer user questions
 * An `Azure Table Storage`, to store the conversation references for the public chat and the Teams thread.
 
 
-## Environemnt variables
+## Enviroment variables
 
-The following environment variables, including the ones already created by the Teams Yeoman Generator, have been used through this application:
+The following environment variables, including the ones already created by the Teams Yeoman Generator, have been used in this application:
 
 STORAGE ACCOUNT
 * `STORAGE_ACCOUNT_NAME=` Azure Storage account name
@@ -55,31 +55,31 @@ GRAPH SERVICE
 In order to run this repository locally, follow the steps below:
 
 * Download a copy of this repository
-* Create in Azure a bot channel registration and enable two channels (Teams and WebChat) - WebChat will already be enabled
-* Create in Azure a storage account
-* Create in Azure and QnA Maker a QnA Service and a knowledge base
-* Create a new manifest pointing to your bot and sideload (or install) that in a Microsoft Teams team
+* Create in Azure a Bot Channel Registration and enable two channels (Teams and WebChat) - WebChat should already be enabled
+* Create in Azure a Storage Account
+* Create in Azure and QnA Maker a QnA Service and a Knowledge Base
+* Create a new manifest pointing to your bot and sideload (or install) it in a Microsoft Teams team
 * Select the channel in this team where the bot will posts cards, copy its URL and decode it
 * Create a new Azure AD Application Registration
-* Assign the OnlineMeetings.ReadWrite delegated permission (or application depending on how to plan to obtain the token) and proceed to provide the admin consent to the application (or manual consent, if needed)
+* Assign the OnlineMeetings.ReadWrite delegated permission (or application depending on how you plan to obtain the token) and proceed to provide the admin consent to the application (or manual consent, if applicable)
 * Create a new resource account and assign a Teams license to it
-* Create a .env file and fill out required variables (besides the one listed above, Yeoman Teams generator also creates `HOSTNAME`, `APPLICATION_ID`, `PACKAGE_NAME`, `MICROSOFT_APP_ID`, `MICROSOFT_APP_PASSWORD` and `PORT`), so if you want to create a new Teams bot through the Yeoman generator and copy the env file created, and add the variables listed above, that would work
-* Run `ngrok` locally exposing the desired port (Yeoman uses 3007, but that will be based on your `PORT` environment variable)
+* Create a .env file and fill out required variables (besides the one listed above, Yeoman Teams generator also creates `HOSTNAME`, `APPLICATION_ID`, `PACKAGE_NAME`, `MICROSOFT_APP_ID`, `MICROSOFT_APP_PASSWORD` and `PORT`), so if you want to create a new Teams bot through the Yeoman generator, copy the env file created and add the variables listed above, that would work
+* Run `ngrok` locally exposing the desired port (Yeoman Teams generator uses 3007, but that will be based on your `PORT` environment variable)
 * Initiate the bot running `gulp serve`, and make sure that all services (Graph, Table and Connector) have initiated correctly
 * Open the `Test in Web Chat` experience or copy the iframe reference of the Web Chat to add it to an existing web page and start interacting with it.
 
 
 ## Expected Conversation Flow
 
-The following conversation flow has been planned through the building process of this bot
+The following conversation flow has been planned through the building process of this bot:
 
 * User receives a bot message when initiating a new conversation
-* User sends a question to the bot that is answered with a card
-* If a user wants to escalate the conversation, he can escalate in the card by filling out the name and question
+* User sends a question to the bot, that is answered with a card
+* If a user wants to escalate the conversation, he/she can escalate in the card by filling out the name and question
 * The bot will process the card submission, create a new thread in the chosen Teams team and initiate the user/expert dialog routing
-* If a user sends a message to the bot, it will be sent to the approproite thread, and if an expert mentions the bot, the message will be sent to the user as well
+* If a user sends a message to the bot, it will be sent to the appropriate thread, and if an expert mentions the bot, the message will be sent to the user as well
 * If an expert clicks on the `Meeting` button in the card of the thread, a new Teams meeting will be created and a card with join coordinates will be sent in both threads, which user and expert can join, if applicable
-* User can send `cancelar` to terminate the conversation, and bot will notify both thread conversation has ended
+* User can send `cancelar` to terminate the conversation, and bot will notify in both threads that the conversation has ended
 * User can ask questions again to the knowledge base.
 
 ## To Do
@@ -94,7 +94,7 @@ The following scenarios, though important, have not been implemented yet in this
 * Table Service active chat boolean column
 * Teams bot checks if a chat is still active, to not try to send webchat user messages in case a thread has already been closed
 * Logic to confirm if the user is still active in webchat, or even left the page, to terminate the conversation automatically
-* Move bot dialog storage implementation from memory to a persistent storage (e.g. Azure Storage)
+* Move bot dialog storage implementation from memory to a persistent storage (e.g. Azure Storage).
 
 
 ## Extension opportunities
@@ -103,7 +103,7 @@ Following are ideas, that could be considered to extend the reach of this soluti
 
 * Create and enable a database of pre-configured answers (the bot app registration in Teams help text is limited to 32 characters), that users could type in the bot from Teams, and will be replaced with the configured answer
 * Create a code (e.g. {user}) that users could type to have the bot replace the text with the public user name
-* Expose to the Teams bot internal services (e.g. check user data against internal information from the chat itself - "@bot, what's userid status?")
+* Expose to the Teams bot internal services (e.g. check user data against internal information from the chat itself - "@bot, what's userid status?").
 
 
 ## Architecture overview
