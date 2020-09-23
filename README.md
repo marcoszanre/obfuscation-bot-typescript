@@ -1,118 +1,119 @@
-# proactive messages - Microsoft Teams App
+**Important**: this sample code is provided as is.
 
-Generate a Microsoft Teams application.
+# Obfuscation Bot - a Microsoft Teams and Public Chat bot
 
-TODO: Add your documentation here
+The obfuscation bot is an example of how a Bot Framework bot is able to interact with two channels (public web chat and a Microsoft Teams team) to enable public users to interact with experts. In addition, this bot also connects with Microsoft Graph, based on a resource account, to dynamically create Teams meetings that both experts and public users can join to interact over audio/video and screen sharing.
 
-## Getting started with Microsoft Teams Apps development
 
-Head on over to [Microsoft Teams official documentation](https://developer.microsoft.com/en-us/microsoft-teams) to learn how to build Microsoft Teams Tabs or the [Microsoft Teams Yeoman generator Wiki](https://github.com/PnP/generator-teams/wiki) for details on how this solution is set up.
+## How does it work?
 
-## Project setup
+When the bot receives an adaptive card user submission, it will create a new thread in the Teams expert channel and store both conversation references in an Azure Table Storage, to refer to when posting proactive messages between the user and the channel. In order to provide a proper user experience when chatting with experts, the bot leverages dialogs and prompts (blank prompts actually), so that, whenever a user sends a message in the public bot, or the Teams channel, the bot refers to the conversation reference and sends a proactive message in the other channel with the content it received. In addition, if an expert decides that the conversation should rather happen over audio/video or even screen sharing, they can, by clicking on the adaptive card, provision a new Teams meeting, that will be sent in both threads, that participants can reference to connect for this particular case. If a user wants to leave the dialog and return to the QnA experience, they just need to send "cancelar" and the bot will terminate the dialog and let both threads know that the conversation has ended. The Bot registration in Teams also has some "answer suggestions" to facilitate the interaction between the expert and the user. 
 
-All required source code are located in the `./src` folder - split into two parts
 
-* `app` for the application
-* `manifest` for the Microsoft Teams app manifest
+## Components
 
-For further details se the [Yo Teams wiki for the project structure](https://github.com/PnP/generator-teams/wiki/Project-Structure)
+The Obfuscation Bot solution is comprised of the following components:
 
-## Building the app
+* A `bot`, built with Bot Framework, hosted in a Teams channel and exposed in the public web chat channel
+* A `Microsoft Teams team`, where experts and anyone who will interact with the bot join to be notified and connect over user conversations
+* An `Azure QnA Service`, that hosts the knowledge base and answer user questions
+* An `Azure Table Storage`, to store the conversation references for the public chat and the Teams thread.
 
-The application is built using the `build` Gulp task.
 
-``` bash
-npm i -g gulp gulp-cli
-gulp build
-```
+## Environemnt variables
 
-## Building the manifest
+The following environment variables, including the ones already created by the Teams Yeoman Generator, have been used through this application:
 
-To create the Microsoft Teams Apps manifest, run the `manifest` Gulp task. This will generate and validate the package and finally create the package (a zip file) in the `package` folder. The manifest will be validated against the schema and dynamically populated with values from the `.env` file.
+STORAGE ACCOUNT
+* `STORAGE_ACCOUNT_NAME=` Azure Storage account name
+* `STORAGE_ACCOUNT_ACCESSKEY=` Azure Storage account access key
 
-``` bash
-gulp manifest
-```
+CONNECTOR CLIENT (TO SEND PROACTIVE NOTIFICATIONS)
+* `TEAMS_CHANNEL_ID=` experts team channel id (**after running it through URL decode**)
+* `SERVICE_URL=` channel connection reference obtained through the context received by the bot (may vary per tenant)
 
-## Configuration
+QNA SERVICE
+* `QNA_KNOWLEDGE_BASE_ID=` QnA Service Knowledge Base ID
+* `QNA_ENDPOINT_KEY=` QnA Service Endpoint Key
+* `QNA_ENDPOINT_HOSTNAME=` QnA Service Hostname
 
-Configuration is stored in the `.env` file. 
+GRAPH SERVICE
+* `GRAPH_CLIENT_ID=` Azure AD Application Registration ID with appropriate online meeting creation permissions
+* `GRAPH_CLIENT_SECRET=` Azure AD Application Registration secret (the consent was provided by an administrator in advance)
+* `GRAPH_USERNAME=` Resource account username (the bot identity Graph endpoint is in Beta as of the publishing of this demo)
+* `GRAPH_USERPASSWORD=` Resource account password (doesn't support Multi-Factor Authentication)
 
-## Debug and test locally
 
-To debug and test the solution locally you use the `serve` Gulp task. This will first build the app and then start a local web server on port 3007, where you can test your Tabs, Bots or other extensions. Also this command will rebuild the App if you change any file in the `/src` directory.
+## How to run it locally
 
-``` bash
-gulp serve
-```
+In order to run this repository locally, follow the steps below:
 
-To debug the code you can append the argument `debug` to the `serve` command as follows. This allows you to step through your code using your preferred code editor.
+* Download a copy of this repository
+* Create in Azure a bot channel registration and enable two channels (Teams and WebChat) - WebChat will already be enabled
+* Create in Azure a storage account
+* Create in Azure and QnA Maker a QnA Service and a knowledge base
+* Create a new manifest pointing to your bot and sideload (or install) that in a Microsoft Teams team
+* Select the channel in this team where the bot will posts cards, copy its URL and decode it
+* Create a new Azure AD Application Registration
+* Assign the OnlineMeetings.ReadWrite delegated permission (or application depending on how to plan to obtain the token) and proceed to provide the admin consent to the application (or manual consent, if needed)
+* Create a new resource account and assign a Teams license to it
+* Create a .env file and fill out required variables (besides the one listed above, Yeoman Teams generator also creates `HOSTNAME`, `APPLICATION_ID`, `PACKAGE_NAME`, `MICROSOFT_APP_ID`, `MICROSOFT_APP_PASSWORD` and `PORT`), so if you want to create a new Teams bot through the Yeoman generator and copy the env file created, and add the variables listed above, that would work
+* Run `ngrok` locally exposing the desired port (Yeoman uses 3007, but that will be based on your `PORT` environment variable)
+* Initiate the bot running `gulp serve`, and make sure that all services (Graph, Table and Connector) have initiated correctly
+* Open the `Test in Web Chat` experience or copy the iframe reference of the Web Chat to add it to an existing web page and start interacting with it.
 
-``` bash
-gulp serve --debug
-```
 
-To step through code in Visual Studio Code you need to add the following snippet in the `./.vscode/launch.json` file. Once done, you can easily attach to the node process after running the `gulp server --debug` command.
+## Expected Conversation Flow
 
-``` json
-{
-    "type": "node",
-    "request": "attach",
-    "name": "Attach",
-    "port": 5858,
-    "sourceMaps": true,
-    "outFiles": [
-        "${workspaceRoot}/dist/**/*.js"
-    ],
-    "remoteRoot": "${workspaceRoot}/src/"
-},
-```
+The following conversation flow has been planned through the building process of this bot
 
-### Using ngrok for local development and hosting
+* User receives a bot message when initiating a new conversation
+* User sends a question to the bot that is answered with a card
+* If a user wants to escalate the conversation, he can escalate in the card by filling out the name and question
+* The bot will process the card submission, create a new thread in the chosen Teams team and initiate the user/expert dialog routing
+* If a user sends a message to the bot, it will be sent to the approproite thread, and if an expert mentions the bot, the message will be sent to the user as well
+* If an expert clicks on the `Meeting` button in the card of the thread, a new Teams meeting will be created and a card with join coordinates will be sent in both threads, which user and expert can join, if applicable
+* User can send `cancelar` to terminate the conversation, and bot will notify both thread conversation has ended
+* User can ask questions again to the knowledge base.
 
-In order to make development locally a great experience it is recommended to use [ngrok](https://ngrok.io), which allows you to publish the localhost on a public DNS, so that you can consume the bot and the other resources in Microsoft Teams. 
+## To Do
 
-To use ngrok, it is recommended to use the `gulp ngrok-serve` command, which will read your ngrok settings from the `.env` file and automatically create a correct manifest file and finally start a local development server using the ngrok settings.
+The following scenarios, though important, have not been implemented yet in this demo:
 
-### Additional build options
+* Bot validation to check all card fields have been filled out by user
+* Graph Service concurrent logic, to handle large loads of provisioning meeting scenarios, if applicable
+* Connector client throttling handling, to handle large loads of proactive messages, if applicable
+* Graph Service token renewal implementation (e.g. every 45 minutes)
+* Table Service no conversation reference found error handling (this shouldn't happen though) 
+* Table Service active chat boolean column
+* Teams bot checks if a chat is still active, to not try to send webchat user messages in case a thread has already been closed
+* Logic to confirm if the user is still active in webchat, or even left the page, to terminate the conversation automatically
 
-You can use the following flags for the `serve`, `ngrok-serve` and build commands:
 
-* `--no-linting` - skips the linting of Typescript during build to improve build times
-* `--debug` - builds in debug mode
+## Extension opportunities
 
-## Deploying to Azure using Git
+Following are ideas, that could be considered to extend the reach of this solution, to target even more scenarios:
 
-If you want to deploy to Azure using Git follow these steps.
+* Create and enable a database of pre-configured answers (the bot app registration in Teams help text is limited to 32 characters), that users could type in the bot from Teams, and will be replaced with the configured answer
+* Create a code (e.g. {user}) that users could type to have the bot replace the text with the public user name
+* Expose to the Teams bot internal services (e.g. check user data against internal information from the chat itself - "@bot, what's userid status?")
 
-This will automatically deploy your files to Azure, download the npm pacakges, build the solution and start the web server using Express.
 
-1. Log into [the Azure Portal](https://portal.azure.com)
-2. Create a new *Resource Group* or use an existing one
-3. Create a new *Web App* with Windows App Service Plan and give it the name of your tab, the same you used when asked for URL in the Yeoman generator. In your case https://proactivemessages.azurewebsites.net.
-4. Add the following keys in the *Configuration* -> *Application Settings*; Name = `WEBSITE_NODE_DEFAULT_VERSION`, Value = `8.10.0` and Name = `SCM_COMMAND_IDLE_TIMEOUT`,  Value = `1800`. Click Save.
-5. Go to *Deployment Center*
-6. Choose *Local Git* as source and *App Service build service* as the Build Provider 
-7. Click on *Deployment Credentials* and store the App Credentials securely
-8. In your tab folder initialize a Git repository using `git init`
-9. Build the solution using `gulp build` to make sure you don't have any errors
-10. Commit all your files using `git add -A && git commit -m "Initial commit"`
-11. Run the following command to set up the remote repository: `git remote add azure https://<username>@proactivemessages.scm.azurewebsites.net:443/proactivemessages.git`. You need to replace <username> with the username of the App Credentials you retrieved in _Deployment Credentials_. You can also copy the URL from *Options* in the Azure Web App.
-12. To push your code use to Azure use the following command: `git push azure master`, you will be asked for your credentials the first time, insert the Password for the App Credential. Note that you should update the Azure Web Site application setting before pushing the code as the settings are needed when building the application.
-13. Wait until the deployment is completed and navigate to https://proactivemessages.azurewebsites.net/privacy.html to test that the web application is running
-14. Done
-15. Repeat step 11 for every commit you do and want to deploy
+## Architecture overview
+![architecture overview](https://github.com/marcoszanre/obfuscation-bot-typescript/blob/master/architecture-overview.png/)
 
-> NOTE: The `.env` file is excluded from source control and will not be pushed to the web site so you need to ensure that all the settings present in the `.env` file are added as application settings to your Azure Web site (except the `PORT` variable which is used for local debugging).
 
-## Logging
+## References
 
-To enable logging for the solution you need to add `msteams` to the `DEBUG` environment variable. See the [debug package](https://www.npmjs.com/package/debug) for more information. By default this setting is turned on in the `.env` file.
+Following are some of the references used in this project:
 
-Example for Windows command line:
+* [ngrok](https://ngrok.io)
+* [Microsoft Teams official documentation](https://developer.microsoft.com/en-us/microsoft-teams)
+* [Microsoft Teams Yeoman generator Wiki](https://github.com/PnP/generator-teams/wiki)
+* [Create Online Meeting Microsoft Graph Endpoint](https://docs.microsoft.com/en-us/graph/api/application-post-onlinemeetings?view=graph-rest-1.0&tabs=http)
+* [Proactive Messages in Microsoft Teams Typescript Bots YouTube Demo](https://www.youtube.com/watch?v=kEL_FUlRpY0&feature=youtu.be)
+* [Azure QnA Maker](https://docs.microsoft.com/en-us/azure/cognitive-services/qnamaker/overview/overview)
+* [Azure Table Storage](https://docs.microsoft.com/en-us/azure/storage/tables/table-storage-overview)
 
-``` bash
-SET DEBUG=msteams
-```
 
-If you are using Microsoft Azure to host your Microsoft Teams app, then you can add `DEBUG` as an Application Setting with the value of `msteams`.
+If you have any questions/suggestions, feel free to share them, **thanks**!
