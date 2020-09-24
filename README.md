@@ -108,7 +108,7 @@ Following are ideas, that could be considered to extend the reach of this soluti
 
 ## Demo screenshots
 
-1. User interaction with web channel (right) and can escalate questions, which are sent to the experts channel in Teams:
+1. User interaction with web channel (left), that can escalate questions, which are sent to the experts channel in Teams:
 
 ![architecture overview](https://github.com/marcoszanre/obfuscation-bot-typescript/blob/master/demo-1.png/)
 
